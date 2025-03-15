@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "MirrorApp",
+    "description": "A React Native App to remotely control the car mirror.",
+    "slug": "MirrorApp",
+    "owner": "muraliikrishnan.thirumalai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/rearview-mirror.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/rearview-mirror.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rutgers.car",
+      "googleServicesFile": "./config/GoogleService-Info.plist"
+    },
+    "android": {
+      "package": "com.rutgers.car",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/rearview-mirror.png",
+        "backgroundColor": "#ffffff"
+      },
+      "googleServicesFile": "./config/google-services.json"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-splash-screen",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
+  }
+}

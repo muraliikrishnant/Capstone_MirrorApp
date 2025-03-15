@@ -34,3 +34,19 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# asdf
+.tool-versions
+
+# backup package
+package.backup
+package.template
+
+# temp folders
+ignore/
+
+# sensitive files
+GoogleService-Info.plist
+google-services.json
+local.properties
+config/AppDelegate.mm

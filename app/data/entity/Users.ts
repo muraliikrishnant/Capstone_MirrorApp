@@ -14,3 +14,17 @@ export const saveUser = async (user: User): Promise<boolean> => {
         throw error;
     };
 };
+
+export const getUser = async (id: string): Promise<User | null> => {
+    try {
+        const userDoc = await getDoc(doc(FIREBASE_DB(), "users", id));
+        if (userDoc.exists) {
+            const user = { id: userDoc.id, ...userDoc.data() } as User;
+            return user;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting user id : " + id, error);
+        throw error;
+    };
+};

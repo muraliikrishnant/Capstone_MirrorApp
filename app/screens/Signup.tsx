@@ -10,7 +10,6 @@ import {
     StyledContainer,
     InnerContainer,
     PageTitle,
-    SubTitle,
     StyledFormArea,
     StyledButton,
     ButtonText,
@@ -25,18 +24,13 @@ import {
 import { ActivityIndicator } from "react-native";
 import { FIREBASE_INIT_AUTH, FIREBASE_DB } from "../../config/Firebase";
 import { MessageType } from "../types/BaseTypes";
-import { getOwner } from "../data/entity/Roles";
-import { saveUser } from "../data/entity/Users";
-import { User } from "../data/model/Types";
+import { Register } from "../data/model/Types";
+import { registerUser } from "../data/Orchestrate";
 
 // Extract colors correctly
 const { brand, darkLight, primary } = Colors;
 
 const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [hidePassword, setHidePassword] = useState(true);
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(moment().subtract(18, "years").toDate());
@@ -59,18 +53,20 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
         setShow(true);
     };
 
-    const signUp = async (values: any) => {
+    const createUser = async (values: any) => {
         setLoading(true);
         try {
             const response = await auth().createUserWithEmailAndPassword(values.email, values.password);
-            const success = await saveUser({
-                id: response.user.uid,
-                email: values.email,
-                firstName: values.firstName,
-                lastName: values.lastName,
-                dateOfBirth: values.dateOfBirth,
+            const success = await registerUser({
+                user: {
+                    id: response.user.uid,
+                    email: values.email,
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    dateOfBirth: values.dateOfBirth,
+                },
                 deviceId: values.deviceId,
-            } as User);
+            } as Register);
             console.log(response);
         } catch (error) {
             console.error(error);
@@ -100,7 +96,7 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     <Formik
                         initialValues={{ firstName: "", lastName: "", dateOfBirth: "", email: "", deviceId: "", password: "", confirmPassword: "" }}
                         onSubmit={(values) => {
-                            signUp(values);
+                            createUser(values);
                         }}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values }) => (

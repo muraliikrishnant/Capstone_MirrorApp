@@ -12,5 +12,16 @@ export interface User {
     dateOfBirth: Date;
     parent: Role;
     role: Role;
+};
+
+export interface Device {
+    id: string;
+    pitch: number;
+    yaw: number;
+    user: User;
+};
+
+export interface Register {
+    user: User;
     deviceId: string;
 };

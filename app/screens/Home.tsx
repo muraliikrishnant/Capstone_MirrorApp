@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useState, useContext } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Fontisto, FontAwesome, MaterialCommunityIcons, Octicons } from "@expo/vector-icons";
@@ -25,8 +25,6 @@ import {
     BottomContainerRow,
 } from "../types/Styles";
 import { BackgroundImage } from "../types/BaseTypes";
-import { getAppStorageItem } from "../types/Storage";
-import { MA_CREDENTIAL } from "../types/Constants";
 
 const { primary, red } = Colors;
 
@@ -74,8 +72,12 @@ const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
                         <ButtonText text={true}>Yaw: </ButtonText>
                     </ExtraView>
                     <ExtraView>
+                        <TextLink>
+                            <TextLinkContent>Get preset</TextLinkContent>
+                        </TextLink>
+                        <VLine/>
                         <TextLink onPress={setPreset}>
-                            <TextLinkContent>Save your preset</TextLinkContent>
+                            <TextLinkContent>Set preset</TextLinkContent>
                         </TextLink>
                     </ExtraView>
                     <InnerContainerNav>

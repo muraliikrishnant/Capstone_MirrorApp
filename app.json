@@ -28,8 +28,6 @@
       "googleServicesFile": "./config/google-services.json"
     },
     "plugins": [
-      "expo-router",
-      "expo-splash-screen",
       [
         "expo-build-properties",
         {

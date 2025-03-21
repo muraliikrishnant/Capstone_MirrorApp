@@ -9,13 +9,12 @@
 
 # Features
 
-- Signup using Email and Password, and Google.
+- Signup using Email and Password.
     - Form validation using Formik and Yup.
     - ? Calendar control for date of birth.
-    - 
 - Authentication.
 - Dashboard with mirror controls.
-- Data storage with Firebase.
+- Data storage with Firestore.
 - Sign out.
 
 # Getting Started
@@ -38,7 +37,7 @@
 
 - The next step is to install `expo` with a blank template.
     ```shell
-    npx create-expo-app MirrorControllerApp --template blank-typescript
+    npx create-expo-app MirrorApp --template blank-typescript
     ```
 - The `package.json` is already added with the required/necessary packages.
 - Then add other packages by installing each from the [`Packages`](#Packages) section below.
@@ -97,5 +96,3 @@ Copy SHA-1 from `debug`.
 
 - Error: No Firebase App '[DEFAULT]' has been created - call Firebase App.initializeApp()
     - [If you are using React Native, this error can also happen if you did not configure the native side properly.](https://stackoverflow.com/questions/40563140/error-no-firebase-app-default-has-been-created-call-firebase-app-initiali)
-# Capstone_MirrorControllerApp
-# Capstone_MirrorControllerApp

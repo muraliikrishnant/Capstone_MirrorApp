@@ -5,6 +5,7 @@ import { Fontisto, FontAwesome, MaterialCommunityIcons, Octicons } from "@expo/v
 import { NavigationProp } from '@react-navigation/native';
 import { CredentialsContext } from "../types/CredentialsContext";
 import { FIREBASE_INIT_AUTH } from "../../config/Firebase";
+import MirrorPosition from "../components/controls/Mirror";
 import {
     PageTitle,
     InnerContainer,
@@ -66,11 +67,7 @@ const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 </ImageContainer>
                 
                 <StyledFormArea>
-                    <ExtraView>
-                        <ButtonText text={true}>Pitch: </ButtonText>
-                        <VLine/>
-                        <ButtonText text={true}>Yaw: </ButtonText>
-                    </ExtraView>
+                    <MirrorPosition></MirrorPosition>
                     <ExtraView>
                         <TextLink>
                             <TextLinkContent>Get preset</TextLinkContent>

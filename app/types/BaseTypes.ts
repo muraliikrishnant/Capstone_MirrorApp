@@ -43,6 +43,11 @@ interface IDirectionButtonProps {
     right?: number;
 };
 
+interface IMirrorAngle {
+    pitch: number;
+    yaw: number;
+};
+
 class StoredItem {
     value?: FirebaseAuthTypes.User | null;
     hasValue?: boolean;
@@ -61,5 +66,5 @@ class BackgroundImage {
     };
 };
 
-export { IButtonProps, IDirectionButtonProps, IPageProps, StoredItem,
-    ITextInput, ITypeProps, BackgroundImage, MessageType };
+export { IButtonProps, IDirectionButtonProps, IMirrorAngle, IPageProps,
+    StoredItem, ITextInput, ITypeProps, BackgroundImage, MessageType };

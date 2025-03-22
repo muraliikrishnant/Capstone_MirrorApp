@@ -43,7 +43,7 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const auth = FIREBASE_INIT_AUTH;
 
     const signIn = async (values: any) => {
-        //setLoading(true);
+        setLoading(true);
         try {
             const response = await auth().signInWithEmailAndPassword(values.email, values.password);
             navigation.navigate("Home");
@@ -52,7 +52,7 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         } catch (error) {
             console.error(error);
         } finally {
-            //setLoading(false);
+            setLoading(false);
         };
     };
     

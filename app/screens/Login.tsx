@@ -27,10 +27,10 @@ import {
 } from "../types/Styles";
 import { FIREBASE_INIT_AUTH } from "../../config/Firebase";
 import { MessageType } from "../types/BaseTypes";
-import { getUser } from "../data/entity/Users";
-import { User } from "../data/model/Types";
+import { FullUser } from "../data/model/Types";
 import { MA_CREDENTIAL } from "../types/Constants";
 import { removeAppStorageItem, setAppStorageItem } from "../types/Storage";
+import { getFullUser } from "../data/Orchestrate";
 
 // Extract colors correctly
 const { darkLight, primary } = Colors;
@@ -45,12 +45,11 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const signIn = async (values: any) => {
         setLoading(true);
         try {
-            const response = await auth().signInWithEmailAndPassword(values.email, values.password);
+            const userCredential = await auth().signInWithEmailAndPassword(values.email, values.password);
+            //console.log(userCredential);
             navigation.navigate("Home");
-            //await AsyncStorage.setItem('mpCredential', JSON.stringify(response.user));
-            //setStoredCredentials(response.user);
         } catch (error) {
-            console.error(error);
+            console.error("Error during login : " + values.email, error);
         } finally {
             setLoading(false);
         };
@@ -59,8 +58,9 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const onAuthStateChanged = async (fbAuthUser: FirebaseAuthTypes.User | null) => {
         if (fbAuthUser) {
             console.log("User is signed in: " + fbAuthUser.email);
-            const user = await getUser(fbAuthUser.uid) as User;
-            await setAppStorageItem(MA_CREDENTIAL, fbAuthUser);
+            const fullUser = await getFullUser(fbAuthUser) as FullUser;
+            //console.log(fullUser);
+            await setAppStorageItem(MA_CREDENTIAL, fullUser);
             navigation.navigate('Home');
         } else {
             console.log("User is signed out");
@@ -84,7 +84,7 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         setLoading(true);
         try {
             const response = await auth.signInWithPopup(new auth.GoogleAuthProvider());
-            console.log(response);
+            //console.log(response);
         } catch (error) {
             console.error(error);
         } finally {

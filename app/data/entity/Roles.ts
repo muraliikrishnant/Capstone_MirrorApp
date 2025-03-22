@@ -3,7 +3,7 @@ import { FIREBASE_DB } from "../../../config/Firebase";
 import { DB_ROLES, DB_ROLES_OWNER } from "../model/Constants";
 import { Role } from "./../model/Types";
   
-export const getOwnerDoc = async (): Promise<FirebaseFirestoreTypes.QueryDocumentSnapshot<FirebaseFirestoreTypes.DocumentData> | null> => {
+export const getOwnerRoleDoc = async (): Promise<FirebaseFirestoreTypes.QueryDocumentSnapshot<FirebaseFirestoreTypes.DocumentData> | null> => {
     try {
         const queryOwner = query(collection(FIREBASE_DB(), DB_ROLES), where("code", "==", DB_ROLES_OWNER));
         const owners = await getDocs(queryOwner);
@@ -17,9 +17,9 @@ export const getOwnerDoc = async (): Promise<FirebaseFirestoreTypes.QueryDocumen
     };
 };
   
-export const getOwner = async (): Promise<Role | null> => {
+export const getOwnerRole = async (): Promise<Role | null> => {
     try {
-        const ownerDoc = await getOwnerDoc();
+        const ownerDoc = await getOwnerRoleDoc();
         if (ownerDoc !== null) {
             return {
                 id: ownerDoc.id,
@@ -34,6 +34,6 @@ export const getOwner = async (): Promise<Role | null> => {
 };
 
 export const getOwnerId = async () => {
-    const owner = await getOwner();
+    const owner = await getOwnerRole();
     return owner?.id;
 }

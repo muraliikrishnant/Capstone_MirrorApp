@@ -22,7 +22,7 @@ import {
     TextLinkContent
 } from "../types/Styles";
 import { ActivityIndicator } from "react-native";
-import { FIREBASE_INIT_AUTH, FIREBASE_DB } from "../../config/Firebase";
+import { FIREBASE_INIT_AUTH } from "../../config/Firebase";
 import { MessageType } from "../types/BaseTypes";
 import { Register } from "../data/model/Types";
 import { registerUser } from "../data/Orchestrate";
@@ -57,22 +57,23 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
         setLoading(true);
         try {
             const response = await auth().createUserWithEmailAndPassword(values.email, values.password);
-            const success = await registerUser({
+            await registerUser({
                 user: {
-                    id: response.user.uid,
-                    email: values.email,
+                    uid: response.user.uid,
+                    email:  values.email.toLowerCase(),
                     firstName: values.firstName,
                     lastName: values.lastName,
                     dateOfBirth: values.dateOfBirth,
+                    deviceCode: values.deviceCode,
                 },
-                deviceId: values.deviceId,
+                deviceCode: values.deviceCode,
             } as Register);
-            console.log(response);
+            //console.log(response);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
-        }
+        };
     };
 
     return (
@@ -94,7 +95,7 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     )*/}
                     
                     <Formik
-                        initialValues={{ firstName: "", lastName: "", dateOfBirth: "", email: "", deviceId: "", password: "", confirmPassword: "" }}
+                        initialValues={{ firstName: "", lastName: "", dateOfBirth: "", email: "", deviceCode: "", password: "", confirmPassword: "" }}
                         onSubmit={(values) => {
                             createUser(values);
                         }}
@@ -146,13 +147,13 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                 />
 
                                 <MCATextInput
-                                    label="Device ID"
+                                    label="Device Code"
                                     icon="gear"
-                                    placeholder="Device ID"
+                                    placeholder="Device Code"
                                     placeholderTextColor={darkLight}
-                                    onChangeText={handleChange("deviceId")}
-                                    onBlur={handleBlur("deviceId")}
-                                    value={values.deviceId}
+                                    onChangeText={handleChange("deviceCode")}
+                                    onBlur={handleBlur("deviceCode")}
+                                    value={values.deviceCode}
                                 />
 
                                 <MCATextInput
@@ -184,7 +185,7 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                 />
 
                                 <MsgBox type={messageType}>{message}</MsgBox>
-                                { loading ? <ActivityIndicator color={primary} size="large" /> : (
+                                {loading ? <ActivityIndicator color={primary} size="large" /> : (
                                     <StyledButton onPress={() => handleSubmit()}>
                                         <ButtonText>Create Account</ButtonText>
                                     </StyledButton>

@@ -3,24 +3,24 @@ import { View, ActivityIndicator } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import { FIREBASE_INIT_AUTH } from "../../config/Firebase";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
-import { getAppStorageItem, setAppStorageItem } from "../types/Storage";
+import { getAppStorageItem, removeAppStorageItem, setAppStorageItem } from "../types/Storage";
 import { MA_CREDENTIAL } from "../types/Constants";
-import { StoredItem } from "../types/BaseTypes";
+import { getUser } from "../data/entity/Users";
+import { User } from "../data/model/Types";
 
 const LoadingScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
-    //const [storageItem, setStorageItem] = useState<StoredItem | null>(null);
+    /*const [storageItem, setStorageItem] = useState<any>(null);
 
-    const onAuthStateChanged = async (user: FirebaseAuthTypes.User | null) => {
-        if (user) {
-            console.log("User is signed in: " + user.email);
-            setAppStorageItem(MA_CREDENTIAL, user);
-            const storedItem = await getAppStorageItem(MA_CREDENTIAL);
-            //setStorageItem(storageItem);
+    const onAuthStateChanged = async (fbAuthUser: FirebaseAuthTypes.User | null) => {
+        if (fbAuthUser) {
+            console.log("User is signed in: " + fbAuthUser.email);
+            const user = await getUser(fbAuthUser.uid) as User;
+            setAppStorageItem(MA_CREDENTIAL, fbAuthUser);
             navigation.navigate('Home');
         } else {
             console.log("User is signed out");
-            //setStorageItem(null);
-            setAppStorageItem(MA_CREDENTIAL, null);
+            setStorageItem(null);
+            removeAppStorageItem(MA_CREDENTIAL);
             navigation.navigate('Login');
         };
     };
@@ -30,12 +30,21 @@ const LoadingScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         return subscriber;
     }, []);
 
-    /*useEffect(() => {
+    useEffect(() => {
         const fetchStorageItem = async () => {
             const item = await getAppStorageItem(MA_CREDENTIAL);
-            setStorageItem(item ? item : null);
+            setStorageItem(item);
         };
         fetchStorageItem();
+    }, []);
+
+    useEffect(() => {
+        if(storageItem !== null) {
+            navigation.navigate("Home");
+        } else {
+            console.log("else");
+            navigation.navigate("Login");
+        }
     }, [storageItem]);*/
 
     /* No bearing on back button press

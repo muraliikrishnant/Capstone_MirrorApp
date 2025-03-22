@@ -1,17 +1,10 @@
 import { ActivityIndicator } from "react-native";
-import React, { useState, useContext } from "react";
-//import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import React, { useState, useEffect } from "react";
+import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { NavigationProp } from '@react-navigation/native';
 import { StatusBar } from "expo-status-bar";
 import { Formik } from "formik";
 import { Fontisto, FontAwesome } from "@expo/vector-icons";
-
-// async-storage
-//import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// credentials context
-//import { CredentialsContext } from "../types/CredentialsContext";
-
 import MCATextInput from "../components/controls/MCATextInput";
 import KeyboardAvoidingWrapper from "../components/controls/KeyboardAvoidingWrapper";
 import Car from "../../assets/images/Car.png";
@@ -34,50 +27,52 @@ import {
 } from "../types/Styles";
 import { FIREBASE_INIT_AUTH } from "../../config/Firebase";
 import { MessageType } from "../types/BaseTypes";
-import { getOwner } from "../data/entity/Roles";
-import { saveUser } from "../data/entity/Users";
+import { getUser } from "../data/entity/Users";
 import { User } from "../data/model/Types";
+import { MA_CREDENTIAL } from "../types/Constants";
+import { removeAppStorageItem, setAppStorageItem } from "../types/Storage";
 
 // Extract colors correctly
 const { darkLight, primary } = Colors;
 
 const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [hidePassword, setHidePassword] = useState(true);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState<MessageType>(MessageType.BLANK);
-    //const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
     const auth = FIREBASE_INIT_AUTH;
 
     const signIn = async (values: any) => {
         //setLoading(true);
         try {
             const response = await auth().signInWithEmailAndPassword(values.email, values.password);
-            navigation.navigate("Loading");
+            navigation.navigate("Home");
             //await AsyncStorage.setItem('mpCredential', JSON.stringify(response.user));
             //setStoredCredentials(response.user);
-            console.log('signed in');
         } catch (error) {
             console.error(error);
         } finally {
             //setLoading(false);
         };
     };
+    
+    const onAuthStateChanged = async (fbAuthUser: FirebaseAuthTypes.User | null) => {
+        if (fbAuthUser) {
+            console.log("User is signed in: " + fbAuthUser.email);
+            const user = await getUser(fbAuthUser.uid) as User;
+            await setAppStorageItem(MA_CREDENTIAL, fbAuthUser);
+            navigation.navigate('Home');
+        } else {
+            console.log("User is signed out");
+            removeAppStorageItem(MA_CREDENTIAL);
+            navigation.navigate('Login');
+        };
+    };
 
-    // Persisting login
-    /*const persistLogin = async (credentials: FirebaseResponse, message: string, status: MessageType) => {
-        asyncStorage.setItem('mirrorAppCredentials', JSON.stringify(credentials))
-            .then(() => {
-                handleMessage(message, status);
-                setStoredCredentials(credentials);
-            })
-            .catch((error) => {
-                handleMessage('Persisting login failed', MessageType.FAILED);
-                console.log(error);
-            });
-    };*/
+    useEffect(() => {
+        const subscriber = FIREBASE_INIT_AUTH().onAuthStateChanged(onAuthStateChanged);
+        return subscriber;
+    }, []);
 
     // Handle message
     const handleMessage = (message: string, type: MessageType) => {

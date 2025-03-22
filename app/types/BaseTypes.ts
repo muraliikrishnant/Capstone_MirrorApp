@@ -8,32 +8,10 @@ enum MessageType {
     INFO = "INFO",
 };
 
-interface ITextInput {
-    label: string;
-    icon: React.ComponentProps<typeof Octicons>['name'];
-    isPassword?: boolean;
-    hidePassword?: boolean;
-    setHidePassword?: (hidePassword: boolean) => void;
-    [key: string]: any; // This allows for any additional props
-};
-
-interface IPageProps {
-    welcome?: boolean;
-};
-
 interface IButtonProps {
     google?: boolean;
     text?: boolean;
     mini?: boolean;
-};
-
-interface ITypeProps {
-    type: MessageType;
-};
-
-interface Image {
-    name: string;
-    image: any;
 };
 
 interface IDirectionButtonProps {
@@ -43,9 +21,33 @@ interface IDirectionButtonProps {
     right?: number;
 };
 
+interface IImage {
+    name: string;
+    image: any;
+};
+
+interface ILabelProps extends React.LabelHTMLAttributes<HTMLSpanElement> {};
+
 interface IMirrorAngle {
     pitch: number;
     yaw: number;
+};
+
+interface IPageProps {
+    welcome?: boolean;
+};
+
+interface ITextInput {
+    label: string;
+    icon: React.ComponentProps<typeof Octicons>['name'];
+    isPassword?: boolean;
+    hidePassword?: boolean;
+    setHidePassword?: (hidePassword: boolean) => void;
+    [key: string]: any; // This allows for any additional props
+};
+
+interface ITypeProps {
+    type: MessageType;
 };
 
 class StoredItem {
@@ -54,7 +56,7 @@ class StoredItem {
 };
 
 class BackgroundImage {
-    private static images: Array<Image> = [
+    private static images: Array<IImage> = [
         { name: 'left.png', image: require('../../assets/images/left.png') },
         { name: 'right.png', image: require('../../assets/images/right.png') },
         { name: 'rear.png', image: require('../../assets/images/rear.png') },
@@ -66,5 +68,5 @@ class BackgroundImage {
     };
 };
 
-export { IButtonProps, IDirectionButtonProps, IMirrorAngle, IPageProps,
+export { IButtonProps, IDirectionButtonProps, ILabelProps, IMirrorAngle, IPageProps,
     StoredItem, ITextInput, ITypeProps, BackgroundImage, MessageType };

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState, useContext } from "react";
+import { Alert, BackHandler } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Fontisto, FontAwesome, MaterialCommunityIcons, Octicons } from "@expo/vector-icons";
 import { NavigationProp } from '@react-navigation/native';
@@ -24,15 +25,19 @@ import {
     ImageContainer,
     VLine,
     BottomContainerRow,
+    StyledInputLabel,
 } from "../types/Styles";
-import { BackgroundImage } from "../types/BaseTypes";
+import { BackgroundImage, IMirrorAngle } from "../types/BaseTypes";
+import { getAppStorageItem } from "../types/Storage";
+import { MA_CREDENTIAL } from "../types/Constants";
 
 const { primary, red } = Colors;
 
-const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
+const Home = () => {
     const [backgroundImage, setBackgroundImage] = useState<BackgroundImage>(BackgroundImage.GetImage("rear.png"));
-    const { storedCredentials, setStoredCredentials } = useContext(CredentialsContext);
-    //const [storageItem, setStorageItem] = useState<StoredItem | null>(null);
+    const [messageText, setMessageText] = useState<IMirrorAngle | null>(null);
+    const [connected, setConnected] = useState<boolean>(false);
+    const [storedItem, setStoredItem] = useState<any>(null);
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
@@ -45,12 +50,66 @@ const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
     const signOut = () => {
         FIREBASE_INIT_AUTH().signOut().then(() => {
-            setStoredCredentials(null);
+            setStoredItem(null);
             console.log('in signout');
         }).catch(error => {
             console.error(error);
         });
     };
+
+    // Control back button press
+    useEffect(() => {
+        const onBackPress = () => {
+            Alert.alert("Exit app", "Do you want to exit?", [
+                {
+                    text: "Cancel",
+                    onPress: () => {},
+                },
+                {
+                    text: "Yes",
+                    onPress: () => {
+                        BackHandler.exitApp()
+                    },
+                }
+            ], {
+                cancelable: false,
+            });
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+
+        return () => backHandler.remove();
+    }, []);
+
+    // Websocket connection
+    useEffect(() => {
+        const socket = new WebSocket("ws://9490-96-248-104-219.ngrok-free.app");
+        socket.onopen = () => {
+            setConnected(true);
+            const fetchItem = async () => {
+                const item = await getAppStorageItem(MA_CREDENTIAL) as any;
+                console.log(item);
+                setStoredItem(item);
+            };
+            fetchItem();
+            console.log('Connected to the server');
+        };
+        socket.onclose = (e) => {
+            setConnected(false);
+            console.log('Disconnected. Check internet or server.');
+        };
+        socket.onerror = (e) => {
+            console.log((e as any).message || 'An error occurred');
+        };
+        socket.onmessage = (e) => {
+            try {
+                setMessageText(JSON.parse(e.data));
+            } catch (error) {
+                console.error("Error parsing JSON", error);
+            };
+        };
+    }, []);
 
     return (
         <StyledContainer>
@@ -66,15 +125,23 @@ const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
                     <ControlImage source={backgroundImage} />
                 </ImageContainer>
                 
-                <StyledFormArea>
-                    <MirrorPosition></MirrorPosition>
+            <StyledFormArea>
                     <ExtraView>
-                        <TextLink>
-                            <TextLinkContent>Get preset</TextLinkContent>
-                        </TextLink>
+                        <StyledInputLabel>
+                            {messageText?.pitch}
+                        </StyledInputLabel>
                         <VLine/>
+                        <StyledInputLabel>
+                            {messageText?.yaw}
+                        </StyledInputLabel>
+                    </ExtraView>
+                    <ExtraView>
                         <TextLink onPress={setPreset}>
                             <TextLinkContent>Set preset</TextLinkContent>
+                        </TextLink>
+                        <VLine/>
+                        <TextLink>
+                            <TextLinkContent>Load preset</TextLinkContent>
                         </TextLink>
                     </ExtraView>
                     <InnerContainerNav>
@@ -110,7 +177,7 @@ const Home = ({ navigation }: { navigation: NavigationProp<any> }) => {
                 </StyledFormArea>
             </InnerContainer>
             <BottomContainerRow>
-                <ButtonText text={true}>User: </ButtonText>
+                <ButtonText text={true}>User: {storedItem?.email}</ButtonText>
                 <ButtonText text={true}>Device ID: 1234</ButtonText>
             </BottomContainerRow>
         </StyledContainer>

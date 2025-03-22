@@ -52,8 +52,9 @@
     - Expo build properties - config plugin to customize native build properties when using `npx expo prebuild`.
         - Requires configuration in `app.json`.
 - Expo status bar: `npx expo install expo-status-bar`.
-- Expo Router: `npx expo install expo-router`.
+- (?) Expo Router: `npx expo install expo-router`.
 - Expo UI - Android requires this: `npx expo install expo-system-ui`.
+- Expo build properties (very important): `npx expo install expo-build-properties`.
 - React: `npm i react`.
 - React Native: `npm i react-native`.
 - React dom: `npm i react-dom`.
@@ -67,10 +68,11 @@
     - Auth: `npx expo install @react-native-firebase/auth`.
     - Firestore: `npx expo install @react-native-firebase/firestore`.
     - Add the required ios and android configuration in `app.json` including adding the packages to the `plugins` property.
-- AsyncStorage to store app data: `npx expo install @react-native-async-storage/async-storage`.
-- Splash screen: `npx expo install expo-splash-screen`.
+- (?) AsyncStorage to store app data: `npx expo install @react-native-async-storage/async-storage`.
+- (?) Splash screen: `npx expo install expo-splash-screen`. 
 - Formik for form validations: `npm i formik`.
 - Moment.Js for date manipulation: `npm i moment`.
+- Datetime picker for iOS/Android: `npm install @react-native-community/datetimepicker`.
 
 ### Dev dependencies
 

@@ -38,8 +38,23 @@ const RootStack = () => {
 
 	return (
 		<NavigationContainer>
-			<Stack.Navigator>
-				<Stack.Screen name="Loading" component={LoadingScreen}/>
+			<Stack.Navigator
+                screenOptions={{
+                    headerStyle: {
+                        backgroundColor: "transparent"
+                    },
+                    headerTintColor: tertiary,
+                    headerTransparent: true,
+                    headerTitle: "",
+                    headerLeft: () => (
+                        <View style={{ paddingLeft: 20 }}>
+                            {/* Add your custom header left component here */}
+                        </View>
+                    ),
+                    headerShown: false
+                }}
+                initialRouteName="Login"
+            >
 				<Stack.Screen name="Login" component={Login} />
 				<Stack.Screen name="Signup" component={Signup} />
 				<Stack.Screen options={{ headerTintColor: primary }} name="Home" component={Home} />

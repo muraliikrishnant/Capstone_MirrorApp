@@ -42,7 +42,6 @@ const LoadingScreen = ({ navigation }: { navigation: NavigationProp<any> }) => {
         if(storageItem !== null) {
             navigation.navigate("Home");
         } else {
-            console.log("else");
             navigation.navigate("Login");
         }
     }, [storageItem]);*/

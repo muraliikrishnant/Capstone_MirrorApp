@@ -6,7 +6,6 @@ const MirrorPosition = () => {
     const [messageText, setMessageText] = React.useState<IMirrorAngle | null>(null);
     const wsUrl = "";
     var ws = React.useRef(new WebSocket(wsUrl)).current;
-    console.log(wsUrl);
     
     React.useEffect(() => {
         const serverMessagesList: string[] = [];

@@ -28,7 +28,6 @@ const RootStack = () => {
 	  } else {
 		setStoredCredentials(null);
 	  };
-	  console.log('state changed');
 	};
   
 	useEffect(() => {

@@ -26,7 +26,9 @@ interface IImage {
     image: any;
 };
 
-interface ILabelProps extends React.LabelHTMLAttributes<HTMLSpanElement> {};
+interface ILabelProps {
+    fontSize: string;
+};
 
 interface IMirrorAngle {
     pitch: number;

@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { View, Text, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import Constants from 'expo-constants';
-import { IButtonProps, IDirectionButtonProps, IPageProps, ITypeProps } from './BaseTypes';
+import { IButtonProps, IDirectionButtonProps, ILabelProps, IPageProps, ITypeProps } from './BaseTypes';
 
 const statusBarHeight = Constants.statusBarHeight;
 
@@ -72,6 +72,7 @@ export const ImageContainer = styled(View)`
     width: 225px;
     height: 200px;
     justify-content: center;
+    perspective: 500px; /* Add perspective for 3D effect */
 `;
 
 export const InnerContainerNav = styled(View)`
@@ -137,10 +138,14 @@ export const SubTitle = styled(Text)<IPageProps>`
     `}
 `;
 
-export const StyledInputLabel = styled(Text)`
+export const StyledInputLabel = styled(Text)<ILabelProps>`
     color: ${tertiary};
-    font-size: 13px;
     text-align: left;
+    ${(props) =>
+        props.fontSize && `
+            font-size: ${props.fontSize};
+        `
+    }
 `;
 
 export const ButtonText = styled(Text)<IButtonProps>`
@@ -250,6 +255,8 @@ export const PageLogo = styled(Image)`
 `;
 
 export const ControlImage = styled(Image)`
+    transform-origin: center;
+    transition: transform 0.5s ease-in-out; /* Add transition for smooth animation */
 `;
 
 export const Avatar = styled(Image)`

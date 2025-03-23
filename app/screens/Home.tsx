@@ -168,11 +168,11 @@ const Home = () => {
                 
                 <StyledFormArea>
                     <ExtraView>
-                        <StyledInputLabel>
+                        <StyledInputLabel fontSize="25px">
                             {messageText?.pitch}
                         </StyledInputLabel>
                         <VLine/>
-                        <StyledInputLabel>
+                        <StyledInputLabel fontSize="25px">
                             {messageText?.yaw}
                         </StyledInputLabel>
                     </ExtraView>

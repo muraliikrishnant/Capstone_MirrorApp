@@ -142,15 +142,6 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                         </StyledButton>
                                     </>
                                 )}
-                                <Line />
-                                { loading ? <ActivityIndicator color={primary} size="large" /> : (
-                                    <>
-                                        <StyledButton google={true} onPress={() => handleSubmit()}>
-                                            <Fontisto name="google" color={primary} size={25} />
-                                            <ButtonText>  Sign in with Google</ButtonText>
-                                        </StyledButton>
-                                    </>
-                                )}
                                 <ExtraView>
                                     <ExtraText>Don't have an account already? </ExtraText>
                                     <TextLink onPress={() => navigation.navigate("Signup")}>

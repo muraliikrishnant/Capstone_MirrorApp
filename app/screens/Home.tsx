@@ -24,55 +24,87 @@ import {
     BottomContainerRow,
     StyledInputLabel,
 } from "../types/Styles";
-import { BackgroundImage, IMirrorAngle } from "../types/BaseTypes";
-import { getAppStorageItem } from "../types/Storage";
+import { BackgroundImage, IMirrorAngle, MovementType } from "../types/BaseTypes";
+import { getAppStorageItem, setAppStorageItem } from "../types/Storage";
 import { MA_CREDENTIAL } from "../types/Constants";
-import { FirebaseAuthTypes } from "@react-native-firebase/auth";
-import { getDevice, getDeviceForUser, saveDevicePreset } from "../data/entity/Devices";
-import { Device, FullUser } from "../data/model/Types";
+import { saveDevicePreset } from "../data/entity/Users";
+import { FullUser } from "../data/model/Types";
 
 const { primary, red } = Colors;
+const MAX = 20, MIN = -20;
 
 const Home = () => {
     const [backgroundImage, setBackgroundImage] = useState<BackgroundImage>(BackgroundImage.GetImage("rear.png"));
     const [messageText, setMessageText] = useState<IMirrorAngle | null>(null);
     const [connected, setConnected] = useState<boolean>(false);
-    const [storedItem, setStoredItem] = useState<any>(null);
-    const [device, setDevice] = useState<Device | null>(null);
+    const [storedItem, setStoredItem] = useState<FullUser | null>(null);
     //const [intervalIdRef, setIntervalIdRef] = useState<ReturnType<typeof setInterval> | null>(null);
-    var socket = useRef(new WebSocket("ws://92d4-96-248-104-219.ngrok-free.app")).current;
+    var socket = useRef(new WebSocket("ws://0ffd-96-248-104-219.ngrok-free.app")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
     };
 
-    const savePreset = async () => {
-        if (!device) {
-            console.log("Device Not found");
-            return;
+    const getAngleInfo = () => {
+        return {
+            pitch: storedItem?.user?.pitch,
+            yaw: storedItem?.user?.yaw,
         };
-        // Save the preset
-        if (messageText?.pitch !== undefined) {
-            device.pitch = messageText.pitch;
-        };
-        if (messageText?.yaw !== undefined) {
-            device.yaw = messageText.yaw;
-        };
+    };
 
-        await saveDevicePreset(device);
-        console.log("Preset saved...");
+    const validateAngle = (value: number): boolean => {
+        return value >= MIN && value <= MAX ? true : false;
+    };
+
+    const changeAngle = (movementType: MovementType) => {
+        if (messageText) {
+            switch (movementType) {
+                case MovementType.UP:
+                    const yawUp = messageText.yaw + 1;
+                    messageText.yaw = validateAngle(yawUp) ? yawUp : messageText.yaw;
+                    break;
+                case MovementType.DOWN:
+                    const yawDown = messageText.yaw - 1;
+                    messageText.yaw = validateAngle(yawDown) ? yawDown : messageText.yaw;
+                    break;
+                case MovementType.LEFT:
+                    const pitchLeft = messageText.pitch - 1;
+                    messageText.pitch = validateAngle(pitchLeft) ? pitchLeft : messageText.pitch;
+                    break;
+                case MovementType.RIGHT:
+                    const pitchRight = messageText.pitch + 1;
+                    messageText.pitch = validateAngle(pitchRight) ? pitchRight : messageText.pitch;
+                    break;
+            };
+            setMessageText({ pitch: messageText.pitch, yaw: messageText.yaw });
+            socket.send(JSON.stringify(messageText));
+        };
+    };
+
+    const savePreset = async () => {
+        // Save the preset
+        if (storedItem?.user) {
+            if (messageText?.pitch !== undefined) {
+                storedItem.user.pitch = messageText.pitch;
+            };
+            if (messageText?.yaw !== undefined) {
+                storedItem.user.yaw = messageText.yaw;
+            };
+
+            await saveDevicePreset(storedItem?.user);
+            await setAppStorageItem(MA_CREDENTIAL, storedItem);
+            console.log("Preset saved...");
+        } else {
+            console.log("Preset couldn't be saved...");
+        };
     };
 
     const loadPreset = async () => {
-        if (!device || !messageText) {
-            console.log("Device Not found");
-            return;
-        };
         // Load preset
-        const fsDevice = await getDevice(device.id);
-        console.log(fsDevice);
-        if (fsDevice?.pitch !== undefined && fsDevice?.yaw !== undefined) {
-            setMessageText({ pitch: fsDevice.pitch, yaw: fsDevice.yaw });
+        const angleInfo = getAngleInfo();
+        console.log(angleInfo);
+        if (angleInfo?.pitch !== undefined && angleInfo?.yaw !== undefined) {
+            setMessageText({ pitch: angleInfo.pitch, yaw: angleInfo.yaw });
         };
         console.log("Preset loaded...")
     };
@@ -80,15 +112,29 @@ const Home = () => {
     const signOut = () => {
         FIREBASE_INIT_AUTH().signOut().then(() => {
             setStoredItem(null);
-            console.log('in signout');
         }).catch(error => {
             console.error(error);
         });
     };
 
+    const moveLeft = () => {
+        changeAngle(MovementType.LEFT);
+    };
+
+    const moveRight = () => {
+        changeAngle(MovementType.RIGHT);
+    };
+
+    const moveUp = () => {
+        changeAngle(MovementType.UP);
+    };
+
+    const moveDown = () => {
+        changeAngle(MovementType.DOWN);
+    };
+
     // Websocket connection
     const socketConnect = () => {
-        //var socket = new WebSocket("ws://92d4-96-248-104-219.ngrok-free.app");
         socket.onopen = () => {
             setConnected(true);
             const fetchItem = async () => {
@@ -96,12 +142,8 @@ const Home = () => {
                 //console.log(item);
                 setStoredItem(item);
                 socket.send(JSON.stringify(["Connected for " + item?.user.email]));
-                setDevice(item?.device);
             };
             setTimeout(fetchItem, 1000);
-            /*if (intervalIdRef !== null) {
-                clearInterval(intervalIdRef);
-            }*/
             console.log('Connected to the server');
         };
         socket.onclose = (e) => {
@@ -186,16 +228,16 @@ const Home = () => {
                         </TextLink>
                     </ExtraView>
                     <InnerContainerNav>
-                        <DirectionButton>
+                        <DirectionButton onPress={() => moveLeft()}>
                             <Fontisto name="arrow-left" size={20}/>
                         </DirectionButton>
-                        <DirectionButton>
+                        <DirectionButton onPress={() => moveUp()}>
                             <Fontisto name="arrow-up" size={20}/>
                         </DirectionButton>
-                        <DirectionButton>
+                        <DirectionButton onPress={() => moveDown()}>
                             <Fontisto name="arrow-down" size={20}/>
                         </DirectionButton>
-                        <DirectionButton>
+                        <DirectionButton onPress={() => moveRight()}>
                             <Fontisto name="arrow-right" size={20}/>
                         </DirectionButton>
                     </InnerContainerNav>
@@ -218,8 +260,8 @@ const Home = () => {
                 </StyledFormArea>
             </InnerContainer>
             <BottomContainerRow>
-                <ButtonText text={true}>User: {storedItem?.user?.email}</ButtonText>
-                <ButtonText text={true}>Device ID: {storedItem?.user?.deviceCode}</ButtonText>
+                <ButtonText text={true}>Name: {storedItem?.user?.firstName} {storedItem?.user?.lastName}</ButtonText>
+                <ButtonText text={true}>Email: {storedItem?.user?.email}</ButtonText>
             </BottomContainerRow>
         </StyledContainer>
     );

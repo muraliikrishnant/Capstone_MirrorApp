@@ -56,19 +56,16 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const createUser = async (values: any) => {
         setLoading(true);
         try {
-            const response = await auth().createUserWithEmailAndPassword(values.email, values.password);
+            const userCredential = await auth().createUserWithEmailAndPassword(values.email, values.password);
             await registerUser({
                 user: {
-                    uid: response.user.uid,
+                    uid: userCredential.user.uid,
                     email:  values.email.toLowerCase(),
                     firstName: values.firstName,
                     lastName: values.lastName,
                     dateOfBirth: values.dateOfBirth,
-                    deviceCode: values.deviceCode,
                 },
-                deviceCode: values.deviceCode,
             } as Register);
-            //console.log(response);
         } catch (error) {
             console.error(error);
         } finally {
@@ -144,16 +141,6 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                     isDate={true}
                                     editable={false}
                                     showDatePicker={showDatePicker}
-                                />
-
-                                <MCATextInput
-                                    label="Device Code"
-                                    icon="gear"
-                                    placeholder="Device Code"
-                                    placeholderTextColor={darkLight}
-                                    onChangeText={handleChange("deviceCode")}
-                                    onBlur={handleBlur("deviceCode")}
-                                    value={values.deviceCode}
                                 />
 
                                 <MCATextInput

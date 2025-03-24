@@ -4,7 +4,7 @@ import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { NavigationProp } from '@react-navigation/native';
 import { StatusBar } from "expo-status-bar";
 import { Formik } from "formik";
-import { Fontisto, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import MCATextInput from "../components/controls/MCATextInput";
 import KeyboardAvoidingWrapper from "../components/controls/KeyboardAvoidingWrapper";
 import Car from "../../assets/images/Car.png";
@@ -31,6 +31,7 @@ import { FullUser } from "../data/model/Types";
 import { MA_CREDENTIAL } from "../types/Constants";
 import { removeAppStorageItem, setAppStorageItem } from "../types/Storage";
 import { getFullUser } from "../data/Orchestrate";
+import { getRandomInt } from "../types/Utils";
 
 // Extract colors correctly
 const { darkLight, primary } = Colors;
@@ -41,6 +42,12 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState<MessageType>(MessageType.BLANK);
     const auth = FIREBASE_INIT_AUTH;
+
+    // Handle message
+    const handleMessage = (message: string, type: MessageType) => {
+        setMessage(message);
+        setMessageType(type);
+    };
 
     const signIn = async (values: any) => {
         setLoading(true);
@@ -57,15 +64,24 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     
     const onAuthStateChanged = async (fbAuthUser: FirebaseAuthTypes.User | null) => {
         if (fbAuthUser) {
-            console.log("User is signed in: " + fbAuthUser.email);
-            const fullUser = await getFullUser(fbAuthUser) as FullUser;
-            //console.log(fullUser);
-            await setAppStorageItem(MA_CREDENTIAL, fullUser);
-            navigation.navigate('Home');
+            if (!fbAuthUser.emailVerified) {
+                //await FIREBASE_INIT_AUTH().signOut();
+                handleMessage("Signup complete or user not verified. Check your email to verify!", MessageType.FAILED);
+                navigation.navigate("Login", { screen: "Signup", random: getRandomInt(-100, 100) });
+            } else if (fbAuthUser.emailVerified) {
+                console.log("User is signed in: " + fbAuthUser.email);
+                const fullUser = await getFullUser(fbAuthUser) as FullUser;
+                //console.log(fullUser);
+                await setAppStorageItem(MA_CREDENTIAL, fullUser);
+                navigation.navigate('Home');
+            };
         } else {
-            console.log("User is signed out");
+            const logoutMsg = "User is signed out";
+            console.log(logoutMsg);
+            handleMessage(logoutMsg, MessageType.INFO);
             removeAppStorageItem(MA_CREDENTIAL);
-            navigation.navigate('Login');
+            navigation.navigate('Login', { screen: "Signout", random: getRandomInt(-100, 100) });
+            console.log("sign out out");
         };
     };
 
@@ -73,24 +89,6 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         const subscriber = FIREBASE_INIT_AUTH().onAuthStateChanged(onAuthStateChanged);
         return subscriber;
     }, []);
-
-    // Handle message
-    const handleMessage = (message: string, type: MessageType) => {
-        setMessage(message);
-        setMessageType(type);
-    };
-
-    /*const googleSignIn = async () => {
-        setLoading(true);
-        try {
-            const response = await auth.signInWithPopup(new auth.GoogleAuthProvider());
-            //console.log(response);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };*/
 
     return (
         <KeyboardAvoidingWrapper>
@@ -133,7 +131,13 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                     hidePassword={hidePassword}
                                     setHidePassword={setHidePassword}
                                 />
-                                <MsgBox type={messageType}>{message}</MsgBox>
+                                <Line/>
+                                {message && (
+                                    <>
+                                        <MsgBox type={messageType}>{message}</MsgBox>
+                                        <Line/>
+                                    </>
+                                )}
                                 { loading ? <ActivityIndicator color={primary} size="large" /> : (
                                     <>
                                         <StyledButton onPress={() => handleSubmit()}>

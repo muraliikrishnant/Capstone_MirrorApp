@@ -15,24 +15,15 @@ export interface User {
     dateOfBirth: Date;
     parent: Role;
     role: Role;
-    deviceCode: string;
+    pitch: number;
+    yaw: number;
 };
 
 export interface FullUser {
     authUser: FirebaseAuthTypes.User;
     user: User;
-    device: Device;
-};
-
-export interface Device {
-    id: string;
-    code: string;
-    pitch: number;
-    yaw: number;
-    user: User;
 };
 
 export interface Register {
     user: User;
-    deviceCode: string;
 };

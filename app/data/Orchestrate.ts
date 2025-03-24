@@ -1,14 +1,10 @@
 import { getUser, saveUser } from "./entity/Users";
-import { Device, FullUser, Register, User } from "./model/Types";
-import { getDevice, saveDevice } from "./entity/Devices";
+import { FullUser, Register, User } from "./model/Types";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
 export const registerUser = async (signUpData: Register): Promise<void> => {
     try {
-        const userDoc = await saveUser(signUpData.user);
-        if (userDoc) {
-            await saveDevice(signUpData.deviceCode, userDoc.ref);
-        };
+        await saveUser(signUpData.user);
     } catch(error) {
         console.error("Error during signup : " + signUpData.user.email, error);
         throw error;
@@ -18,7 +14,7 @@ export const registerUser = async (signUpData: Register): Promise<void> => {
 export const getFullUser = async (fbAuthUser: FirebaseAuthTypes.User): Promise<FullUser | null> => {
     try {
         const user = await getUser(fbAuthUser.uid) as User;
-        const device = await getDevice(user.deviceCode) as Device;
+        console.log(user);
         return {
             authUser: {
                 displayName: fbAuthUser.displayName,
@@ -31,20 +27,15 @@ export const getFullUser = async (fbAuthUser: FirebaseAuthTypes.User): Promise<F
                 uid: fbAuthUser.uid,
             } as FirebaseAuthTypes.User,
             user: {
-                id: user.id,
-                uid: user.uid,
-                firstName: user.firstName,
-                lastName: user.lastName,
                 dateOfBirth: user.dateOfBirth,
-                deviceCode: user.deviceCode,
                 email: user.email,
+                firstName: user.firstName,
+                id: user.id,
+                lastName: user.lastName,
+                pitch: user.pitch,
+                uid: user.uid,
+                yaw: user.yaw,
             } as User,
-            device: {
-                id: device.id,
-                code: device.code,
-                pitch: device.pitch,
-                yaw: device.yaw,
-            } as Device,
         };
     } catch (error) {
         console.error("Error getting full user : " + fbAuthUser.uid, error);

@@ -8,6 +8,13 @@ enum MessageType {
     INFO = "INFO",
 };
 
+enum MovementType {
+    UP = "UP",
+    DOWN = "DOWN",
+    LEFT = "LEFT",
+    RIGHT = "RIGHT",
+};
+
 interface IButtonProps {
     google?: boolean;
     text?: boolean;
@@ -70,5 +77,5 @@ class BackgroundImage {
     };
 };
 
-export { IButtonProps, IDirectionButtonProps, ILabelProps, IMirrorAngle, IPageProps,
-    StoredItem, ITextInput, ITypeProps, BackgroundImage, MessageType };
+export { BackgroundImage, IButtonProps, IDirectionButtonProps, ILabelProps, IMirrorAngle,
+    IPageProps, ITextInput, ITypeProps, MessageType, MovementType, StoredItem };

@@ -1,4 +1,4 @@
-import { addDoc, collection, getDoc, doc, FirebaseFirestoreTypes, query, where } from "@react-native-firebase/firestore";
+import { addDoc, collection, getDoc, doc, FirebaseFirestoreTypes, query, where, updateDoc } from "@react-native-firebase/firestore";
 import { FIREBASE_DB } from "../../../config/Firebase";
 import { User } from "./../model/Types";
 import { getOwnerRoleDoc } from "./Roles";
@@ -39,10 +39,23 @@ export const saveUser = async (user: User): Promise<FirebaseFirestoreTypes.Docum
     const ownerRole = await getOwnerRoleDoc();
     const userData = { ...user, role: ownerRole?.ref };
     try {
+        console.log(userData);
         const userDoc = await addDoc(collection(FIREBASE_DB(), "users"), userData);
         return await getUserDoc(userDoc.id);
     } catch(error) {
         console.error("Error saving user : " + user.email, error);
+        throw error;
+    };
+};
+
+export const saveDevicePreset = async (user: Partial<User>): Promise<void> => {
+    try {
+        await updateDoc(doc(FIREBASE_DB(), "users", user.id ?? ""), {
+            pitch: user.pitch,
+            yaw: user.yaw,
+        });
+    } catch (error) {
+        console.error("Error saving preset : " + user.id, error);
         throw error;
     };
 };

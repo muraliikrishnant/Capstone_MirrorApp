@@ -38,8 +38,11 @@ const Home = () => {
     const [messageText, setMessageText] = useState<IMirrorAngle | null>(null);
     const [connected, setConnected] = useState<boolean>(false);
     const [storedItem, setStoredItem] = useState<FullUser | null>(null);
+    const [hideButton, setHideButton] = useState<boolean>(false);
+    const [pitch, setPitch] = useState<number>(0);
+    const [yaw, setYaw] = useState<number>(0);
     //const [intervalIdRef, setIntervalIdRef] = useState<ReturnType<typeof setInterval> | null>(null);
-    var socket = useRef(new WebSocket("ws://0ffd-96-248-104-219.ngrok-free.app")).current;
+    var socket = useRef(new WebSocket("ws://bd48-96-248-104-219.ngrok-free.app")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
@@ -85,9 +88,11 @@ const Home = () => {
         // Save the preset
         if (storedItem?.user) {
             if (messageText?.pitch !== undefined) {
+                setPitch(messageText.pitch);
                 storedItem.user.pitch = messageText.pitch;
             };
             if (messageText?.yaw !== undefined) {
+                setYaw(messageText.yaw);
                 storedItem.user.yaw = messageText.yaw;
             };
 
@@ -103,8 +108,9 @@ const Home = () => {
         // Load preset
         const angleInfo = getAngleInfo();
         console.log(angleInfo);
-        if (angleInfo?.pitch !== undefined && angleInfo?.yaw !== undefined) {
+        if (angleInfo?.pitch && angleInfo?.yaw) {
             setMessageText({ pitch: angleInfo.pitch, yaw: angleInfo.yaw });
+            socket.send(JSON.stringify(messageText));
         };
         console.log("Preset loaded...")
     };
@@ -141,6 +147,8 @@ const Home = () => {
                 const item = await getAppStorageItem(MA_CREDENTIAL) as FullUser;
                 //console.log(item);
                 setStoredItem(item);
+                setPitch(item?.user.pitch);
+                setYaw(item?.user.yaw);
                 socket.send(JSON.stringify(["Connected for " + item?.user.email]));
             };
             setTimeout(fetchItem, 1000);
@@ -220,11 +228,11 @@ const Home = () => {
                     </ExtraView>
                     <ExtraView>
                         <TextLink onPress={() => savePreset()}>
-                            <TextLinkContent>Save preset</TextLinkContent>
+                            <TextLinkContent disabled={false}>Save preset</TextLinkContent>
                         </TextLink>
                         <VLine/>
-                        <TextLink onPress={() => loadPreset()}>
-                            <TextLinkContent>Load preset</TextLinkContent>
+                        <TextLink disabled={pitch === undefined} onPress={() => loadPreset()}>
+                            <TextLinkContent disabled={pitch === undefined}>Load preset</TextLinkContent>
                         </TextLink>
                     </ExtraView>
                     <InnerContainerNav>
@@ -242,7 +250,7 @@ const Home = () => {
                         </DirectionButton>
                     </InnerContainerNav>
 
-                    <InnerContainerNav>
+                    {hideButton && <InnerContainerNav>
                         <StyledButton mini={true} onPress={() => getImage("left.png")}>
                             <Fontisto name="arrow-left" size={20} color={primary}/>
                             <MaterialCommunityIcons name="mirror" size={24} color={primary}/>
@@ -256,7 +264,7 @@ const Home = () => {
                             <MaterialCommunityIcons name="mirror" size={24} color={primary}/>
                             <Fontisto name="arrow-right" size={20} color={primary}/>
                         </StyledButton>
-                    </InnerContainerNav>
+                    </InnerContainerNav>}
                 </StyledFormArea>
             </InnerContainer>
             <BottomContainerRow>

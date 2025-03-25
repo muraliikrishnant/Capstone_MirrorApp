@@ -35,6 +35,7 @@ interface IImage {
 
 interface ILabelProps {
     fontSize: string;
+    disabled?: boolean;
 };
 
 interface IMirrorAngle {

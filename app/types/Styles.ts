@@ -184,9 +184,14 @@ export const ExtraText = styled(Text)`
     font-size: 15px;
 `;
 
-export const TextLinkContent = styled(Text)`
+export const TextLinkContent = styled(Text)<ILabelProps>`
     color: ${red};
     font-size: 15px;
+    ${(props) =>
+        props.disabled && `
+            color: ${darkLight};
+        `
+    };
 `;
 
 export const StyledTextInput = styled(TextInput)`

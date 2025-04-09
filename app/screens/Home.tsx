@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Fontisto, FontAwesome, MaterialCommunityIcons, Octicons } from "@expo/vector-icons";
@@ -29,20 +28,27 @@ import { getAppStorageItem, setAppStorageItem } from "../types/Storage";
 import { MA_CREDENTIAL } from "../types/Constants";
 import { saveDevicePreset } from "../data/entity/Users";
 import { FullUser } from "../data/model/Types";
+import ToggleSwitch from "../components/controls/ToggleSwitch";
 
 const { primary, red } = Colors;
 const MAX = 20, MIN = -20;
 
 const Home = () => {
-    const [backgroundImage, setBackgroundImage] = useState<BackgroundImage>(BackgroundImage.GetImage("rear.png"));
-    const [messageText, setMessageText] = useState<IMirrorAngle | null>(null);
+    // Initialize local mirror angle so mirror UI updates with button presses.
+    const [backgroundImage, setBackgroundImage] = useState(BackgroundImage.GetImage("rear.png"));
+    const [messageText, setMessageText] = useState<IMirrorAngle>({ pitch: 0, yaw: 0 });
     const [connected, setConnected] = useState<boolean>(false);
     const [storedItem, setStoredItem] = useState<FullUser | null>(null);
     const [hideButton, setHideButton] = useState<boolean>(false);
     const [pitch, setPitch] = useState<number>(0);
     const [yaw, setYaw] = useState<number>(0);
-    //const [intervalIdRef, setIntervalIdRef] = useState<ReturnType<typeof setInterval> | null>(null);
-    var socket = useRef(new WebSocket("ws://bd48-96-248-104-219.ngrok-free.app")).current;
+    // Track waiting state, auto-adjust flag, and whether we've received the initial base angle.
+    const [isWaiting, setIsWaiting] = useState<boolean>(false);
+    const [autoAdjust, setAutoAdjust] = useState<boolean>(false);
+    const [hasReceivedBaseAngle, setHasReceivedBaseAngle] = useState<boolean>(false);
+
+    // Initialize WebSocket connection using your ngrok URL.
+    const socket = useRef(new WebSocket("wss://fb4a-128-6-147-107.ngrok-free.app")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
@@ -56,63 +62,69 @@ const Home = () => {
     };
 
     const validateAngle = (value: number): boolean => {
-        return value >= MIN && value <= MAX ? true : false;
+        return value >= MIN && value <= MAX;
     };
 
+    // Update the local angle based solely on button presses.
+    // Up/Down buttons update pitch (rotateX), left/right buttons update yaw (rotateY).
     const changeAngle = (movementType: MovementType) => {
         if (messageText) {
+            let updatedAngle = { ...messageText };
             switch (movementType) {
                 case MovementType.UP:
-                    const yawUp = messageText.yaw + 1;
-                    messageText.yaw = validateAngle(yawUp) ? yawUp : messageText.yaw;
+                    const pitchUp = updatedAngle.pitch + 1;
+                    if (validateAngle(pitchUp)) updatedAngle.pitch = pitchUp;
                     break;
                 case MovementType.DOWN:
-                    const yawDown = messageText.yaw - 1;
-                    messageText.yaw = validateAngle(yawDown) ? yawDown : messageText.yaw;
+                    const pitchDown = updatedAngle.pitch - 1;
+                    if (validateAngle(pitchDown)) updatedAngle.pitch = pitchDown;
                     break;
                 case MovementType.LEFT:
-                    const pitchLeft = messageText.pitch - 1;
-                    messageText.pitch = validateAngle(pitchLeft) ? pitchLeft : messageText.pitch;
+                    const yawLeft = updatedAngle.yaw - 1;
+                    if (validateAngle(yawLeft)) updatedAngle.yaw = yawLeft;
                     break;
                 case MovementType.RIGHT:
-                    const pitchRight = messageText.pitch + 1;
-                    messageText.pitch = validateAngle(pitchRight) ? pitchRight : messageText.pitch;
+                    const yawRight = updatedAngle.yaw + 1;
+                    if (validateAngle(yawRight)) updatedAngle.yaw = yawRight;
                     break;
-            };
-            setMessageText({ pitch: messageText.pitch, yaw: messageText.yaw });
-            socket.send(JSON.stringify(messageText));
-        };
+            }
+            console.log("New local angle:", updatedAngle);
+            setMessageText(updatedAngle);
+        }
+    };
+
+    // Send the updated angle and autoAdjust flag to the server.
+    const sendAngleToServer = () => {
+        if (messageText && socket.readyState === WebSocket.OPEN) {
+            const payload = { ...messageText, autoAdjust };
+            console.log("Preparing to send payload:", payload);
+            console.log("Payload JSON:", JSON.stringify(payload));
+            socket.send(JSON.stringify(payload));
+            setIsWaiting(true);
+        }
     };
 
     const savePreset = async () => {
-        // Save the preset
-        if (storedItem?.user) {
-            if (messageText?.pitch !== undefined) {
-                setPitch(messageText.pitch);
-                storedItem.user.pitch = messageText.pitch;
-            };
-            if (messageText?.yaw !== undefined) {
-                setYaw(messageText.yaw);
-                storedItem.user.yaw = messageText.yaw;
-            };
-
-            await saveDevicePreset(storedItem?.user);
+        if (storedItem?.user && messageText) {
+            setPitch(messageText.pitch);
+            setYaw(messageText.yaw);
+            storedItem.user.pitch = messageText.pitch;
+            storedItem.user.yaw = messageText.yaw;
+            await saveDevicePreset(storedItem.user);
             await setAppStorageItem(MA_CREDENTIAL, storedItem);
             console.log("Preset saved...");
         } else {
             console.log("Preset couldn't be saved...");
-        };
+        }
     };
 
     const loadPreset = async () => {
-        // Load preset
         const angleInfo = getAngleInfo();
-        console.log(angleInfo);
-        if (angleInfo?.pitch && angleInfo?.yaw) {
+        console.log("Loading preset:", angleInfo);
+        if (angleInfo?.pitch !== undefined && angleInfo?.yaw !== undefined) {
             setMessageText({ pitch: angleInfo.pitch, yaw: angleInfo.yaw });
-            socket.send(JSON.stringify(messageText));
-        };
-        console.log("Preset loaded...")
+        }
+        console.log("Preset loaded...");
     };
 
     const signOut = () => {
@@ -123,82 +135,76 @@ const Home = () => {
         });
     };
 
-    const moveLeft = () => {
-        changeAngle(MovementType.LEFT);
-    };
+    const moveLeft = () => changeAngle(MovementType.LEFT);
+    const moveRight = () => changeAngle(MovementType.RIGHT);
+    const moveUp = () => changeAngle(MovementType.UP);
+    const moveDown = () => changeAngle(MovementType.DOWN);
 
-    const moveRight = () => {
-        changeAngle(MovementType.RIGHT);
-    };
-
-    const moveUp = () => {
-        changeAngle(MovementType.UP);
-    };
-
-    const moveDown = () => {
-        changeAngle(MovementType.DOWN);
-    };
-
-    // Websocket connection
+    // WebSocket connection setup.
     const socketConnect = () => {
         socket.onopen = () => {
             setConnected(true);
             const fetchItem = async () => {
                 const item = await getAppStorageItem(MA_CREDENTIAL) as FullUser;
-                //console.log(item);
                 setStoredItem(item);
                 setPitch(item?.user.pitch);
                 setYaw(item?.user.yaw);
-                socket.send(JSON.stringify(["Connected for " + item?.user.email]));
+                socket.send(JSON.stringify({ info: "Connected", email: item?.user.email }));
             };
             setTimeout(fetchItem, 1000);
-            console.log('Connected to the server');
+            console.log("Connected to the server");
         };
+
         socket.onclose = (e) => {
             setConnected(false);
-            console.log('Disconnected. Check internet or server.');
-            // Reconnect if socket disconnects.
-            setTimeout(socketConnect.bind(this), 1000);
-            //setIntervalIdRef(setInterval(socketConnect, 10000));
+            console.log("Disconnected. Check internet or server.");
+            setTimeout(socketConnect, 1000);
         };
+
         socket.onerror = (e) => {
-            console.log(e || 'An error occurred');
+            console.log(e || "An error occurred");
         };
+
         socket.onmessage = (e) => {
             try {
-                const receivedData = e.data;
-                console.log('Received data - ' + receivedData);
-                setMessageText(JSON.parse(receivedData));
+                const data = JSON.parse(e.data);
+                console.log("Received data:", data);
+                if (data.status) {
+                    if (data.status === "waiting") {
+                        setIsWaiting(true);
+                    } else if (data.status === "ready") {
+                        // Update local base angle with ready packet values.
+                        setMessageText({ pitch: data.pitch, yaw: data.yaw });
+                        setIsWaiting(false);
+                        console.log("Updated local angle from ready message:", data);
+                    }
+                } else {
+                    // If no status, assume it's the initial base angle.
+                    if (!hasReceivedBaseAngle) {
+                        setMessageText(data);
+                        setHasReceivedBaseAngle(true);
+                        console.log("Updated local base angle from server:", data);
+                    }
+                }
             } catch (error) {
                 console.error("Error parsing JSON", error);
-            };
+            }
         };
     };
 
     socketConnect();
 
-    // Control back button press
+    // Handle Android back button press.
     useEffect(() => {
         const onBackPress = () => {
             Alert.alert("Exit app", "Do you want to exit?", [
-                {
-                    text: "Cancel",
-                    onPress: () => {},
-                },
-                {
-                    text: "Yes",
-                    onPress: () => {
-                        BackHandler.exitApp()
-                    },
-                }
-            ], {
-                cancelable: false,
-            });
+                { text: "Cancel", onPress: () => {} },
+                { text: "Yes", onPress: () => BackHandler.exitApp() }
+            ], { cancelable: false });
             return true;
         };
 
         const backHandler = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-
         return () => backHandler.remove();
     }, []);
 
@@ -213,63 +219,88 @@ const Home = () => {
             <InnerContainer>
                 <PageTitle>Dashboard</PageTitle>
                 <ImageContainer>
-                    <ControlImage source={backgroundImage} />
+                    {/* Mirror image rotates based on local pitch and yaw values.
+                        Using rotateX for pitch (up/down tilt) and rotateY for yaw (left/right rotation). */}
+                    <ControlImage 
+                        source={backgroundImage} 
+                        style={{
+                            transform: [
+                                { rotateX: `${messageText?.pitch || 0}deg` },
+                                { rotateY: `${messageText?.yaw || 0}deg` }
+                            ]
+                        }}
+                    />
                 </ImageContainer>
-                
                 <StyledFormArea>
                     <ExtraView>
                         <StyledInputLabel fontSize="25px">
                             {messageText?.pitch}
                         </StyledInputLabel>
-                        <VLine/>
+                        <VLine />
                         <StyledInputLabel fontSize="25px">
                             {messageText?.yaw}
                         </StyledInputLabel>
                     </ExtraView>
                     <ExtraView>
-                        <TextLink onPress={() => savePreset()}>
+                        <TextLink onPress={savePreset}>
                             <TextLinkContent disabled={false}>Save preset</TextLinkContent>
                         </TextLink>
-                        <VLine/>
-                        <TextLink disabled={pitch === undefined} onPress={() => loadPreset()}>
-                            <TextLinkContent disabled={pitch === undefined}>Load preset</TextLinkContent>
+                        <VLine />
+                        <TextLink onPress={loadPreset}>
+                            <TextLinkContent>Load preset</TextLinkContent>
                         </TextLink>
                     </ExtraView>
                     <InnerContainerNav>
-                        <DirectionButton onPress={() => moveLeft()}>
-                            <Fontisto name="arrow-left" size={20}/>
+                        <DirectionButton onPress={moveLeft}>
+                            <Fontisto name="arrow-left" size={20} />
                         </DirectionButton>
-                        <DirectionButton onPress={() => moveUp()}>
-                            <Fontisto name="arrow-up" size={20}/>
+                        <DirectionButton onPress={moveUp}>
+                            <Fontisto name="arrow-up" size={20} />
                         </DirectionButton>
-                        <DirectionButton onPress={() => moveDown()}>
-                            <Fontisto name="arrow-down" size={20}/>
+                        <DirectionButton onPress={moveDown}>
+                            <Fontisto name="arrow-down" size={20} />
                         </DirectionButton>
-                        <DirectionButton onPress={() => moveRight()}>
-                            <Fontisto name="arrow-right" size={20}/>
+                        <DirectionButton onPress={moveRight}>
+                            <Fontisto name="arrow-right" size={20} />
                         </DirectionButton>
                     </InnerContainerNav>
-
-                    {hideButton && <InnerContainerNav>
-                        <StyledButton mini={true} onPress={() => getImage("left.png")}>
-                            <Fontisto name="arrow-left" size={20} color={primary}/>
-                            <MaterialCommunityIcons name="mirror" size={24} color={primary}/>
-                        </StyledButton>
-                        <VLine/>
-                        <StyledButton mini={true} onPress={() => getImage("rear.png")}>
-                            <Octicons name="mirror" size={24} color={primary}/>
-                        </StyledButton>
-                        <VLine/>
-                        <StyledButton mini={true} onPress={() => getImage("right.png")}>
-                            <MaterialCommunityIcons name="mirror" size={24} color={primary}/>
-                            <Fontisto name="arrow-right" size={20} color={primary}/>
-                        </StyledButton>
-                    </InnerContainerNav>}
+                    {/* Send Angle button */}
+                    <StyledButton onPress={sendAngleToServer} disabled={isWaiting}>
+                        <ButtonText>{isWaiting ? "Waiting..." : "Send Angle"}</ButtonText>
+                    </StyledButton>
+                    {/* Auto-Adjust Toggle with Label */}
+                    <ExtraView style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                        <StyledInputLabel fontSize="16px" style={{ marginRight: 10 }}>
+                            Use Auto-Adjust DL Model
+                        </StyledInputLabel>
+                        <ToggleSwitch value={autoAdjust} onToggle={() => setAutoAdjust(prev => !prev)} />
+                    </ExtraView>
+                    {hideButton && (
+                        <InnerContainerNav>
+                            <StyledButton mini={true} onPress={() => getImage("left.png")}>
+                                <Fontisto name="arrow-left" size={20} color={primary} />
+                                <MaterialCommunityIcons name="mirror" size={24} color={primary} />
+                            </StyledButton>
+                            <VLine />
+                            <StyledButton mini={true} onPress={() => getImage("rear.png")}>
+                                <Octicons name="mirror" size={24} color={primary} />
+                            </StyledButton>
+                            <VLine />
+                            <StyledButton mini={true} onPress={() => getImage("right.png")}>
+                                <MaterialCommunityIcons name="mirror" size={24} color={primary} />
+                                <Fontisto name="arrow-right" size={20} color={primary} />
+                            </StyledButton>
+                        </InnerContainerNav>
+                    )}
                 </StyledFormArea>
             </InnerContainer>
             <BottomContainerRow>
-                <ButtonText text={true}>Name: {storedItem?.user?.firstName} {storedItem?.user?.lastName}</ButtonText>
-                <ButtonText text={true}>Email: {storedItem?.user?.email}</ButtonText>
+                <ButtonText text={true}>
+                    Name: {storedItem?.user?.firstName} {storedItem?.user?.lastName}
+                </ButtonText>
+                <ButtonText text={true}>
+                    Email: {storedItem?.user?.email}
+                </ButtonText>
             </BottomContainerRow>
         </StyledContainer>
     );

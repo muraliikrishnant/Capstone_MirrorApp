@@ -44,11 +44,11 @@ const Home = () => {
     const [yaw, setYaw] = useState<number>(0);
     // Track waiting state, auto-adjust flag, and whether we've received the initial base angle.
     const [isWaiting, setIsWaiting] = useState<boolean>(false);
-    const [autoAdjust, setAutoAdjust] = useState<boolean>(false);
+    const [autoAdjust, setAutoAdjust] = useState<boolean>(false); 
     const [hasReceivedBaseAngle, setHasReceivedBaseAngle] = useState<boolean>(false);
 
     // Initialize WebSocket connection using your ngrok URL.
-    const socket = useRef(new WebSocket("wss://fb4a-128-6-147-107.ngrok-free.app")).current;
+    const socket = useRef(new WebSocket("wss://927e-128-6-147-107.ngrok-free.app")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
@@ -93,14 +93,25 @@ const Home = () => {
         }
     };
 
-    // Send the updated angle and autoAdjust flag to the server.
+    // Send explicit angle updates (pitch and yaw only) to the server when the send angle button is pressed.
     const sendAngleToServer = () => {
         if (messageText && socket.readyState === WebSocket.OPEN) {
-            const payload = { ...messageText, autoAdjust };
-            console.log("Preparing to send payload:", payload);
-            console.log("Payload JSON:", JSON.stringify(payload));
+            const payload = { pitch: messageText.pitch, yaw: messageText.yaw };
+            console.log("Sending explicit angle payload:", payload);
             socket.send(JSON.stringify(payload));
             setIsWaiting(true);
+        }
+    };
+
+    // Handle auto-adjust toggle separately.
+    const handleToggleAutoAdjust = () => {
+        const newVal = !autoAdjust;
+        setAutoAdjust(newVal);
+        // Send a separate JSON packet for autoAdjust toggle.
+        if (socket.readyState === WebSocket.OPEN) {
+            const autoPayload = { autoAdjust: newVal ? "True" : "False" };
+            console.log("Sending autoAdjust payload:", autoPayload);
+            socket.send(JSON.stringify(autoPayload));
         }
     };
 
@@ -173,13 +184,13 @@ const Home = () => {
                     if (data.status === "waiting") {
                         setIsWaiting(true);
                     } else if (data.status === "ready") {
-                        // Update local base angle with ready packet values.
+                        // Update local base angle from the ready packet.
                         setMessageText({ pitch: data.pitch, yaw: data.yaw });
                         setIsWaiting(false);
                         console.log("Updated local angle from ready message:", data);
                     }
                 } else {
-                    // If no status, assume it's the initial base angle.
+                    // Assume it's the initial base angle if not already set.
                     if (!hasReceivedBaseAngle) {
                         setMessageText(data);
                         setHasReceivedBaseAngle(true);
@@ -219,8 +230,7 @@ const Home = () => {
             <InnerContainer>
                 <PageTitle>Dashboard</PageTitle>
                 <ImageContainer>
-                    {/* Mirror image rotates based on local pitch and yaw values.
-                        Using rotateX for pitch (up/down tilt) and rotateY for yaw (left/right rotation). */}
+                    {/* Mirror image rotates based on local pitch and yaw values. */}
                     <ControlImage 
                         source={backgroundImage} 
                         style={{
@@ -264,16 +274,20 @@ const Home = () => {
                             <Fontisto name="arrow-right" size={20} />
                         </DirectionButton>
                     </InnerContainerNav>
-                    {/* Send Angle button */}
-                    <StyledButton onPress={sendAngleToServer} disabled={isWaiting}>
-                        <ButtonText>{isWaiting ? "Waiting..." : "Send Angle"}</ButtonText>
+                    {/* Send Angle button sends only pitch and yaw. */}
+                    <StyledButton onPress={sendAngleToServer} disabled={isWaiting || autoAdjust}>
+                        <ButtonText>
+                            {autoAdjust 
+                                ? "cannot use during dl inference" 
+                                : (isWaiting ? "Waiting..." : "Send Angle")}
+                        </ButtonText>
                     </StyledButton>
                     {/* Auto-Adjust Toggle with Label */}
                     <ExtraView style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                         <StyledInputLabel fontSize="16px" style={{ marginRight: 10 }}>
                             Use Auto-Adjust DL Model
                         </StyledInputLabel>
-                        <ToggleSwitch value={autoAdjust} onToggle={() => setAutoAdjust(prev => !prev)} />
+                        <ToggleSwitch value={autoAdjust} onToggle={handleToggleAutoAdjust} />
                     </ExtraView>
                     {hideButton && (
                         <InnerContainerNav>

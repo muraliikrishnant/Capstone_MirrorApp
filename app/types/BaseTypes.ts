@@ -33,6 +33,11 @@ interface IImage {
     image: any;
 };
 
+interface IImageProps {
+    xAxis: number;
+    yAxis: number;
+};
+
 interface ILabelProps {
     fontSize: string;
     disabled?: boolean;
@@ -78,5 +83,5 @@ class BackgroundImage {
     };
 };
 
-export { BackgroundImage, IButtonProps, IDirectionButtonProps, ILabelProps, IMirrorAngle,
+export { BackgroundImage, IButtonProps, IDirectionButtonProps, IImageProps, ILabelProps, IMirrorAngle,
     IPageProps, ITextInput, ITypeProps, MessageType, MovementType, StoredItem };

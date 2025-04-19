@@ -73,6 +73,7 @@
 - Formik for form validations: `npm i formik`.
 - Moment.Js for date manipulation: `npm i moment`.
 - Datetime picker for iOS/Android: `npm install @react-native-community/datetimepicker`.
+- For Android APK build: `npm i react-native-paper`.
 
 ### Dev dependencies
 
@@ -93,6 +94,15 @@ To get SHA-1 fingerprint
 cd android
 ./gradlew signingReport
 Copy SHA-1 from `debug`.
+
+# Generate APK
+
+```shell
+cd android
+./gradlew assembleRelease
+# Output is stored in the below folder path
+cd app/build/outputs/apk/release
+```
 
 # Troubleshooting
 

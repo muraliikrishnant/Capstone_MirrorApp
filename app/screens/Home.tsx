@@ -48,7 +48,7 @@ const Home = () => {
     const [hasReceivedBaseAngle, setHasReceivedBaseAngle] = useState<boolean>(false);
 
     // Initialize WebSocket connection using your ngrok URL.
-    const socket = useRef(new WebSocket("wss://927e-128-6-147-107.ngrok-free.app")).current;
+    const socket = useRef(new WebSocket("wss://f625-96-248-104-219.ngrok-free.app")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
@@ -256,7 +256,7 @@ const Home = () => {
                             <TextLinkContent disabled={false}>Save preset</TextLinkContent>
                         </TextLink>
                         <VLine />
-                        <TextLink onPress={loadPreset}>
+                        <TextLink disabled={pitch === undefined} onPress={loadPreset}>
                             <TextLinkContent>Load preset</TextLinkContent>
                         </TextLink>
                     </ExtraView>

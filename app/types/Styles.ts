@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { View, Text, Image, TextInput, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import Constants from 'expo-constants';
-import { IButtonProps, IDirectionButtonProps, ILabelProps, IPageProps, ITypeProps } from './BaseTypes';
+import { IButtonProps, IDirectionButtonProps, IImageProps, ILabelProps, IPageProps, ITypeProps } from './BaseTypes';
 
 const statusBarHeight = Constants.statusBarHeight;
 
@@ -259,9 +259,14 @@ export const PageLogo = styled(Image)`
     height: 200;
 `;
 
-export const ControlImage = styled(Image)`
+export const ControlImage = styled(Image)<IImageProps>`
     transform-origin: center;
     transition: transform 0.5s ease-in-out; /* Add transition for smooth animation */
+    ${(props) =>
+        (props.xAxis || props.yAxis) && `
+            transform: rotateX(${props.xAxis}deg) rotateY(${props.yAxis}deg);
+        `
+    }
 `;
 
 export const Avatar = styled(Image)`

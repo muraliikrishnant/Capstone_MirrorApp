@@ -130,7 +130,7 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                     keyboardType="email-address"
                                 />
 
-                                <MCATextInput
+                                {/*<MCATextInput
                                     label="Date of Birth"
                                     icon="calendar"
                                     placeholder="YYYY - MM - DD"
@@ -141,7 +141,7 @@ const SignUp = ({ navigation }: { navigation: NavigationProp<any> }) => {
                                     isDate={true}
                                     editable={false}
                                     showDatePicker={showDatePicker}
-                                />
+                                />*/}
 
                                 <MCATextInput
                                     label="Password"

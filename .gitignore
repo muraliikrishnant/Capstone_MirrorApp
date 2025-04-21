@@ -48,8 +48,3 @@ package.template
 # temp folders
 ignore/
 
-# sensitive files
-GoogleService-Info.plist
-google-services.json
-local.properties
-config/AppDelegate.mm

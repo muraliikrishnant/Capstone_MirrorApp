@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "86493602473",
+    "project_id": "mirrorcontrollerapp",
+    "storage_bucket": "mirrorcontrollerapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86493602473:android:c8b7a7b57adcb8f8d5bfb8",
+        "android_client_info": {
+          "package_name": "com.rutgers.car"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "86493602473-tnea6tf9vp8fn3f9mt05s14ej84trruj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rutgers.car",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "86493602473-dksptd2e250gmp9h5c9t20m3uv05gin1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQCzjs_wQzsZ06D56_567n7PPZ4WnBvTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "86493602473-dksptd2e250gmp9h5c9t20m3uv05gin1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "86493602473-leec4h5rerqcnac3d1l84fdrai8q81fh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.rutgers.car"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>86493602473-leec4h5rerqcnac3d1l84fdrai8q81fh.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.86493602473-leec4h5rerqcnac3d1l84fdrai8q81fh</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDvA0jgzTiNn-Jno5hB-wGenNYTDyZro9g</string>
+	<key>GCM_SENDER_ID</key>
+	<string>86493602473</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.rutgers.car</string>
+	<key>PROJECT_ID</key>
+	<string>mirrorcontrollerapp</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mirrorcontrollerapp.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:86493602473:ios:f0ac45e3fb78d396d5bfb8</string>
+</dict>
+</plist>

@@ -48,7 +48,7 @@ const Home = () => {
     const [hasReceivedBaseAngle, setHasReceivedBaseAngle] = useState<boolean>(false);
 
     // Initialize WebSocket connection using your ngrok URL.
-    const socket = useRef(new WebSocket("wss://f625-96-248-104-219.ngrok-free.app")).current;
+    const socket = useRef(new WebSocket("wss://witty-mails-return.loca.lt/")).current;
 
     const getImage = (name: string) => {
         setBackgroundImage(BackgroundImage.GetImage(name));
